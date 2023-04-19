@@ -1,0 +1,56 @@
+{% extends "base.html" %}
+
+{% block head %}
+<title>Flask</title>
+{% endblock %}
+
+{% block body %}
+<h1 style="text-align: center">Artist CRUD with Flask</h1>
+<div style="margin-left: 50px; margin-right: 50px; text-align: center">
+    <h2 style="text-align: center; margin-top: 10px">Artist list</h2>
+    {% if artists|length < 1 %}
+    <h4 style="text-align: center; margin-top: 10px">No artists on the list. Create one below:</h4>
+    {% else %}
+    <table style="margin-top: 20px; text-align: center" class="table table-striped">
+        <tr>
+            <th>Name</th>
+            <th>Genre</th>
+            <th>Added</th>
+            <th>Delete</th>
+            <th>Update</th>
+            <th>Tour</th>
+        </tr>
+        {% for artist in artists %}
+            <tr>
+                <td>{{ artist.name }}</td>
+                <td>{{ artist.genre }}</td>
+                <td>{{ artist.date_created.strftime('%d.%m.%Y | %H:%M:%S') }}</td>
+                <td>
+                    <a class="btn btn-danger" href="/delete-artist/{{artist.id}}">💣</a>
+                </td>
+                <td>
+                    <a class="btn btn-info" href="/update-artist/{{artist.id}}">📝</a>
+                </td>
+                <td>
+                    <a class="btn btn-warning" target="blank" href="https://google.com/search?q={{artist.name}}+tour+dates">🔎 Search</a>
+                </td>
+            </tr>
+        {% endfor %}
+    </table>
+    {% endif %}
+    <form style="text-align: center; margin-top: 10px" action="/" method="POST">
+        <h5>New artist</h5>
+        <input type="text" name="name" id="name" placeholder="Name" required><br>
+        {% with messages = get_flashed_messages() %}
+          {% if messages %}
+              {% for message in messages %}
+                <h5 style="margin-top: 10px">{{ message }}</h5>
+              {% endfor %}
+          {% endif %}
+        {% endwith %}
+        <input style="margin-top: 10px" type="text" name="genre" id="genre" placeholder="Genre" required><br>
+        <input style="margin-top: 10px" class="btn btn-success" type="submit" value="Add artist">
+    </form>
+    <a class="btn btn-primary" href="/albums" style="margin-top: 20px; margin-bottom: 20px">Album list</a>
+</div>
+{% endblock %}

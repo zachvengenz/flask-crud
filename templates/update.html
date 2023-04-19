@@ -1,0 +1,17 @@
+{% extends "base.html" %}
+
+{% block head %}
+<title>Flask</title>
+{% endblock %}
+
+{% block body %}
+<div >
+    <h2 style="text-align: center; margin-top: 20px">Update artist</h2>
+
+    <form style="text-align: center" action="/update-artist/{{artist.id}}" method="POST">
+        <input style="margin-top: 10px" type="text" name="name" id="name" value="{{artist.name}}" required><br>
+        <input style="margin-top: 10px" type="text" name="genre" id="genre" value="{{artist.genre}}" required><br>
+        <input style="margin-top: 10px" class="btn btn-success" type="submit" value="Update artist">
+    </form>
+</div>
+{% endblock %}

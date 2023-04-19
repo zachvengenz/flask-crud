@@ -1,0 +1,52 @@
+{% extends "base.html" %}
+
+{% block head %}
+<title>Flask</title>
+{% endblock %}
+
+{% block body %}
+<h1 style="text-align: center">Artist CRUD with Flask</h1>
+<div style="margin-left: 50px; margin-right: 50px; text-align: center">
+    <h2 style="text-align: center; margin-top: 10px">Album list</h2>
+    {% if albums|length < 1 %}
+    <h4 style="text-align: center; margin-top: 10px">No albums on the list. Create one below:</h4>
+    {% else %}
+    <table style="margin-top: 20px; text-align: center" class="table table-striped">
+        <tr>
+            <th>Title</th>
+            <th>Artist</th>
+            <th>Added</th>
+            <th>Delete</th>
+        </tr>
+        {% for album in albums %}
+            <tr>
+                <td>{{ album.title }}</td>
+                <td>{{ album.artist.name }}</td>
+                <td>{{ album.date_created.strftime('%d.%m.%Y | %H:%M:%S') }}</td>
+                <td>
+                    <a class="btn btn-danger" href="/delete-album/{{album.id}}">💣</a>
+                </td>
+            </tr>
+        {% endfor %}
+    </table>
+    {% endif %}
+    <form style="text-align: center; margin-top: 10px" action="/albums" method="POST">
+        <h5>New album</h5>
+        <input type="text" name="title" id="title" placeholder="Title" required><br>
+        {% with messages = get_flashed_messages() %}
+          {% if messages %}
+              {% for message in messages %}
+                <h5 style="margin-top: 10px">{{ message }}</h5>
+              {% endfor %}
+          {% endif %}
+        {% endwith %}
+        <select style="margin-top: 10px" name="artist_id" id="artist_id" required>
+            {% for artist in artists|sort(attribute='name') %}
+            <option value="{{ artist.id }}">{{ artist.name }}</option>
+            {% endfor %}
+        </select><br>
+        <input style="margin-top: 10px" class="btn btn-success" type="submit" value="Add album">
+    </form>
+    <a class="btn btn-primary" href="/" style="margin-top: 20px; margin-bottom: 20px" >Artist list</a>
+</div>
+{% endblock %}
