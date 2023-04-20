@@ -1,7 +1,9 @@
-from flask import Flask, render_template, request, redirect, flash, jsonify
-import secrets
+from flask import Flask, render_template, request, redirect, flash, jsonify, make_response
 from sqlalchemy.orm import joinedload
 from models import Artist, Album, db
+import secrets
+import io
+import csv
 
 app = Flask(__name__)
 app.secret_key = secrets.token_hex(16)
@@ -141,6 +143,28 @@ def get_artists():
 def get_albums():
     albums = Album.query.all()
     return jsonify([album.serialize for album in albums])
+
+
+# Export CSV route
+@app.route('/export/csv')
+def export_csv():
+    artists = Artist.query.all()
+    output = io.StringIO()
+    writer = csv.writer(output)
+
+    # Write header row
+    writer.writerow(['Artist Name', 'Genre', 'DB Album Count'])
+
+    # Write data rows
+    for artist in artists:
+        writer.writerow([artist.name, artist.genre, len(artist.albums)])
+
+    # Set up response object
+    response = make_response(output.getvalue())
+    response.headers['Content-Disposition'] = 'attachment; filename=artists.csv'
+    response.headers['Content-type'] = 'text/csv'
+
+    return response
 
 
 if __name__ == "__main__":
