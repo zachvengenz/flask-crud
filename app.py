@@ -68,7 +68,8 @@ def artist_list():
             return render_template("nice.html")
 
         # check if the artist already exists (name)
-        artist_exists = Artist.query.filter(Artist.name.collate('NOCASE') == artist_name).first()
+        artist_exists = Artist.query.filter(
+            Artist.name.collate('NOCASE') == artist_name).first()
         if artist_exists:
             flash("Artist already exists")
             return redirect("/")

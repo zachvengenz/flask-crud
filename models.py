@@ -7,7 +7,9 @@ from werkzeug.security import check_password_hash, generate_password_hash
 db = SQLAlchemy()
 
 # format the timezone
-date_now = datetime.utcnow().replace(tzinfo=pytz.utc).astimezone(pytz.timezone('Europe/Helsinki'))
+date_now = datetime.utcnow().replace(
+    tzinfo=pytz.utc).astimezone(
+        pytz.timezone('Europe/Helsinki'))
 
 
 class Artist(db.Model):
@@ -34,7 +36,10 @@ class Artist(db.Model):
 class Album(db.Model):
     id = db.Column(db.Integer, primary_key=True)
     title = db.Column(db.String(200), unique=True, nullable=False)
-    artist_id = db.Column(db.Integer, db.ForeignKey('artist.id'), nullable=False)
+    artist_id = db.Column(
+        db.Integer,
+        db.ForeignKey('artist.id'),
+        nullable=False)
     date_created = db.Column(db.DateTime, default=date_now)
 
     def __repr__(self):
