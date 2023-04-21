@@ -1,0 +1,30 @@
+{% extends "base.html" %}
+
+{% block head %}
+<title>Flask</title>
+{% endblock %}
+
+{% block body %}
+<div style="text-align: center; padding-top: 50px">
+    {% if current_user.is_authenticated %}
+    <h2>You are already logged in as {{ current_user.username }}.</h2>
+  <a style="margin-top: 20px" class="btn btn-primary" href="/">Go to frontpage</a>
+  {% else %}
+    <h2>Log in to continue</h2>
+    <form style="margin-top: 20px" action="/login" method="POST">
+      <input type="text" id="username" name="username" placeholder="Username" required>
+      <br>
+      <input style="margin-top: 10px" type="password" id="password" name="password" placeholder="Password" required>
+      <br>
+      <input style="margin-top: 20px" class="btn btn-primary" type="submit" value="Log in">
+    </form>
+  {% endif %}
+  {% with messages = get_flashed_messages() %}
+    {% if messages %}
+        {% for message in messages %}
+          <h5 style="margin-top: 10px">{{ message }}</h5>
+        {% endfor %}
+    {% endif %}
+  {% endwith %}
+</div>
+{% endblock %}

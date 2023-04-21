@@ -1,9 +1,15 @@
-from flask import Flask, render_template, request, redirect, flash, jsonify, make_response
-from sqlalchemy.orm import joinedload
-from models import Artist, Album, db
-import secrets
-import io
 import csv
+import io
+import secrets
+
+from flask import (Flask, flash, jsonify, make_response, redirect,
+                   render_template, request)
+from flask_login import (LoginManager, current_user, login_required,
+                         login_user, logout_user)
+from sqlalchemy.orm import joinedload
+
+from models import Album, Artist, User, db
+from utils import load_user
 
 app = Flask(__name__)
 app.secret_key = secrets.token_hex(16)
@@ -11,17 +17,58 @@ app.config["SQLALCHEMY_DATABASE_URI"] = "sqlite:///test.db"
 
 db.init_app(app)
 
+login_manager = LoginManager()
+login_manager.init_app(app)
+login_manager.user_loader(load_user)
+
+
+@login_manager.unauthorized_handler
+def unauthorized():
+    return redirect('/login')
+
+
+@app.route("/login", methods=["POST", "GET"])
+def login():
+    if current_user.is_authenticated:
+        return render_template("login.html")
+
+    if request.method == 'POST':
+        username = request.form['username']
+        password = request.form['password']
+        user = User.query.filter_by(username=username).first()
+
+        if user is not None and user.check_password(password):
+            login_user(user)
+            return redirect("/")
+        else:
+            flash('Invalid username or password')
+
+    return render_template("login.html")
+
+
+@app.route('/logout')
+@login_required
+def logout():
+    logout_user()
+    return redirect("/login")
+
 
 # artist page
 @app.route("/", methods=["POST", "GET"])
+@login_required
 def artist_list():
     if request.method == "POST":
-        artist_name = request.form["name"]
-        artist_genre = request.form["genre"]
-        new_artist = Artist(name=artist_name, genre=artist_genre)
+        try:
+            artist_name = request.form["name"]
+            artist_genre = request.form["genre"]
+            new_artist = Artist(name=artist_name, genre=artist_genre)
+
+        except Exception as e:
+            print(str(e))
+            return render_template("nice.html")
 
         # check if the artist already exists (name)
-        artist_exists = Artist.query.filter_by(name=artist_name).first()
+        artist_exists = Artist.query.filter(Artist.name.collate('NOCASE') == artist_name).first()
         if artist_exists:
             flash("Artist already exists")
             return redirect("/")
@@ -48,32 +95,17 @@ def artist_list():
 
 # delete artist
 @app.route("/delete-artist/<int:artist_id>")
+@login_required
 def delete_artist(artist_id):
     artist_to_delete = Artist.query.get_or_404(artist_id)
 
-    try:
-        # first delete all albums associated with the artist
-        Album.query.filter_by(artist_id=artist_id).delete()
-
-        # then delete the artist
-        db.session.delete(artist_to_delete)
-        db.session.commit()
-        return redirect("/")
-
-    except Exception as e:
-        print(str(e))
-        return render_template("error.html")
-
-
-# update artist
-@app.route("/update-artist/<int:artist_id>", methods=["POST", "GET"])
-def update_artist(artist_id):
-    artist_to_update = Artist.query.get_or_404(artist_id)
-    if request.method == "POST":
-        artist_to_update.name = request.form["name"]
-        artist_to_update.genre = request.form["genre"]
-
+    if current_user.is_admin():
         try:
+            # first delete all albums associated with the artist
+            Album.query.filter_by(artist_id=artist_id).delete()
+
+            # then delete the artist
+            db.session.delete(artist_to_delete)
             db.session.commit()
             return redirect("/")
 
@@ -82,20 +114,55 @@ def update_artist(artist_id):
             return render_template("error.html")
 
     else:
-        return render_template("update.html", artist=artist_to_update)
+        flash("Only admin can delete records from database")
+        return redirect("/")
+
+
+# update artist
+@app.route("/update-artist/<int:artist_id>", methods=["POST", "GET"])
+@login_required
+def update_artist(artist_id):
+    artist_to_update = Artist.query.get_or_404(artist_id)
+    if request.method == "POST":
+        try:
+            artist_to_update.name = request.form["name"]
+            artist_to_update.genre = request.form["genre"]
+            db.session.commit()
+            return redirect("/")
+
+        except Exception as e:
+            print(str(e))
+            return render_template("nice.html")
+
+    else:
+        if current_user.is_admin():
+            return render_template("update.html", artist=artist_to_update)
+        flash("Only admin can update records in database")
+        return redirect("/")
 
 
 # album page
 @app.route("/albums", methods=["POST", "GET"])
+@login_required
 def album_list():
     artists = Artist.query.all()
     if request.method == "POST":
-        album_name = request.form["title"]
-        artist_id = request.form["artist_id"]
-        new_album = Album(title=album_name, artist_id=artist_id)
+        try:
+            album_name = request.form["title"]
+            artist_id = request.form["artist_id"]
+            new_album = Album(title=album_name, artist_id=artist_id)
+
+        except Exception as e:
+            print(str(e))
+            return render_template("nice.html")
 
         # check if the album already exists (title)
-        album_exists = Album.query.filter_by(title=album_name, artist_id=artist_id).first()
+        album_exists = (
+            Album.query
+            .filter(Album.title.collate("NOCASE") == album_name,
+                    Album.artist_id == artist_id)
+            .first()
+        )
 
         if album_exists:
             flash("Album already exists")
@@ -118,17 +185,23 @@ def album_list():
 
 # delete album
 @app.route("/delete-album/<int:album_id>")
+@login_required
 def delete_album(album_id):
     album_to_delete = Album.query.get_or_404(album_id)
 
-    try:
-        db.session.delete(album_to_delete)
-        db.session.commit()
-        return redirect("/albums")
+    if current_user.is_admin():
+        try:
+            db.session.delete(album_to_delete)
+            db.session.commit()
+            return redirect("/albums")
 
-    except Exception as e:
-        print(str(e))
-        return render_template("error.html")
+        except Exception as e:
+            print(str(e))
+            return render_template("error.html")
+
+    else:
+        flash("Only admin can delete records from database")
+        return redirect("/albums")
 
 
 # REST API Route - artists
@@ -147,6 +220,7 @@ def get_albums():
 
 # Export CSV route
 @app.route('/export/csv')
+@login_required
 def export_csv():
     artists = Artist.query.all()
     output = io.StringIO()

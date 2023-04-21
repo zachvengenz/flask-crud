@@ -6,6 +6,7 @@
 
 {% block body %}
 <h1 style="text-align: center">Artist CRUD with Flask</h1>
+<p style="text-align: center">Logged in with {{ current_user.role }} rights</p>
 <div style="margin-left: 50px; margin-right: 50px; text-align: center">
     <h2 style="text-align: center; margin-top: 10px">Album list</h2>
     {% if albums|length < 1 %}
@@ -30,16 +31,16 @@
         {% endfor %}
     </table>
     {% endif %}
+    {% with messages = get_flashed_messages() %}
+      {% if messages %}
+          {% for message in messages %}
+            <h5 style="margin-top: 10px; color: red; border: 2px solid red; padding: 5px">{{ message }}</h5>
+          {% endfor %}
+      {% endif %}
+    {% endwith %}
     <form style="text-align: center; margin-top: 10px" action="/albums" method="POST">
         <h5>New album</h5>
         <input type="text" name="title" id="title" placeholder="Title" required><br>
-        {% with messages = get_flashed_messages() %}
-          {% if messages %}
-              {% for message in messages %}
-                <h5 style="margin-top: 10px">{{ message }}</h5>
-              {% endfor %}
-          {% endif %}
-        {% endwith %}
         <select style="margin-top: 10px" name="artist_id" id="artist_id" required>
             {% for artist in artists|sort(attribute='name') %}
             <option value="{{ artist.id }}">{{ artist.name }}</option>
@@ -47,6 +48,7 @@
         </select><br>
         <input style="margin-top: 10px" class="btn btn-success" type="submit" value="Add album">
     </form>
-    <a class="btn btn-primary" href="/" style="margin-top: 10px; margin-bottom: 30px" >Artist list</a>
+    <a class="btn btn-primary" href="/" style="margin-top: 10px" >Artist list</a><br>
+    <a class="btn btn-danger" href="logout" style="margin-top: 10px; margin-bottom: 30px">Log out</a>
 </div>
 {% endblock %}

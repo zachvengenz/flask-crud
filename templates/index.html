@@ -6,6 +6,7 @@
 
 {% block body %}
 <h1 style="text-align: center">Artist CRUD with Flask</h1>
+<p style="text-align: center">Logged in with {{ current_user.role }} rights</p>
 <div style="margin-left: 50px; margin-right: 50px; text-align: center">
     <h2 style="text-align: center; margin-top: 10px">Artist list</h2>
     {% if artists|length < 1 %}
@@ -38,20 +39,21 @@
         {% endfor %}
     </table>
     {% endif %}
+    {% with messages = get_flashed_messages() %}
+      {% if messages %}
+          {% for message in messages %}
+            <h5 style="margin-top: 10px; color: red; border: 2px solid red; padding: 5px">{{ message }}</h5>
+          {% endfor %}
+      {% endif %}
+    {% endwith %}
     <form style="text-align: center; margin-top: 10px" action="/" method="POST">
         <h5>New artist</h5>
         <input type="text" name="name" id="name" placeholder="Name" required><br>
-        {% with messages = get_flashed_messages() %}
-          {% if messages %}
-              {% for message in messages %}
-                <h5 style="margin-top: 10px">{{ message }}</h5>
-              {% endfor %}
-          {% endif %}
-        {% endwith %}
         <input style="margin-top: 10px" type="text" name="genre" id="genre" placeholder="Genre" required><br>
         <input style="margin-top: 10px" class="btn btn-success" type="submit" value="Add artist">
     </form>
-    <a class="btn btn-primary" href="/albums" style="margin-top: 10px; margin-bottom: 30px">Album list</a>
-    <a class="btn btn-dark" href="/export/csv" style="margin-top: 10px; margin-bottom: 30px">Export CSV</a>
+    <a class="btn btn-primary" href="/albums" style="margin-top: 10px">Album list</a><br>
+    <a class="btn btn-dark" href="/export/csv" style="margin-top: 10px">Export CSV</a><br>
+    <a class="btn btn-danger" href="logout" style="margin-top: 10px; margin-bottom: 30px">Log out</a>
 </div>
 {% endblock %}
