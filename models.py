@@ -9,7 +9,7 @@ db = SQLAlchemy()
 # format the timezone
 date_now = datetime.utcnow().replace(
     tzinfo=pytz.utc).astimezone(
-        pytz.timezone('Europe/Helsinki'))
+        pytz.timezone("Europe/Helsinki"))
 
 
 class Artist(db.Model):
@@ -17,7 +17,7 @@ class Artist(db.Model):
     name = db.Column(db.String(200), nullable=False)
     genre = db.Column(db.String(200), unique=True, nullable=False)
     date_created = db.Column(db.DateTime, default=date_now)
-    albums = db.relationship('Album', backref='artist', lazy=True)
+    albums = db.relationship("Album", backref="artist", lazy=True)
 
     def __repr__(self):
         return "<Artist %r>" % self.id
@@ -25,11 +25,11 @@ class Artist(db.Model):
     @property
     def serialize(self):
         return {
-            'id': self.id,
-            'name': self.name,
-            'genre': self.genre,
-            'date_created': self.date_created.isoformat(),
-            'albums': [album.title for album in self.albums]
+            "id": self.id,
+            "name": self.name,
+            "genre": self.genre,
+            "date_created": self.date_created.isoformat(),
+            "albums": [album.title for album in self.albums]
         }
 
 
@@ -38,7 +38,7 @@ class Album(db.Model):
     title = db.Column(db.String(200), unique=True, nullable=False)
     artist_id = db.Column(
         db.Integer,
-        db.ForeignKey('artist.id'),
+        db.ForeignKey("artist.id"),
         nullable=False)
     date_created = db.Column(db.DateTime, default=date_now)
 
@@ -48,10 +48,10 @@ class Album(db.Model):
     @property
     def serialize(self):
         return {
-            'id': self.id,
-            'title': self.title,
-            'artist': self.artist.name,
-            'date_created': self.date_created.isoformat()
+            "id": self.id,
+            "title": self.title,
+            "artist": self.artist.name,
+            "date_created": self.date_created.isoformat()
         }
 
 
@@ -80,4 +80,4 @@ class User(db.Model):
         return True if self.id else False
 
     def is_admin(self):
-        return self.role == 'admin'
+        return self.role == "admin"

@@ -24,7 +24,7 @@ login_manager.user_loader(load_user)
 
 @login_manager.unauthorized_handler
 def unauthorized():
-    return redirect('/login')
+    return redirect("/login")
 
 
 @app.route("/login", methods=["POST", "GET"])
@@ -32,21 +32,21 @@ def login():
     if current_user.is_authenticated:
         return render_template("login.html")
 
-    if request.method == 'POST':
-        username = request.form['username']
-        password = request.form['password']
+    if request.method == "POST":
+        username = request.form["username"]
+        password = request.form["password"]
         user = User.query.filter_by(username=username).first()
 
         if user is not None and user.check_password(password):
             login_user(user)
             return redirect("/")
         else:
-            flash('Invalid username or password')
+            flash("Invalid username or password")
 
     return render_template("login.html")
 
 
-@app.route('/logout')
+@app.route("/logout")
 @login_required
 def logout():
     logout_user()
@@ -69,7 +69,7 @@ def artist_list():
 
         # check if the artist already exists (name)
         artist_exists = Artist.query.filter(
-            Artist.name.collate('NOCASE') == artist_name).first()
+            Artist.name.collate("NOCASE") == artist_name).first()
         if artist_exists:
             flash("Artist already exists")
             return redirect("/")
@@ -213,14 +213,14 @@ def get_artists():
 
 
 # REST API Route - albums
-@app.route('/api/albums')
+@app.route("/api/albums")
 def get_albums():
     albums = Album.query.all()
     return jsonify([album.serialize for album in albums])
 
 
 # Export CSV route
-@app.route('/export/csv')
+@app.route("/export/csv")
 @login_required
 def export_csv():
     artists = Artist.query.all()
@@ -228,7 +228,7 @@ def export_csv():
     writer = csv.writer(output)
 
     # Write header row
-    writer.writerow(['Artist Name', 'Genre', 'DB Album Count'])
+    writer.writerow(["Artist Name", "Genre", "DB Album Count"])
 
     # Write data rows
     for artist in artists:
@@ -236,8 +236,8 @@ def export_csv():
 
     # Set up response object
     response = make_response(output.getvalue())
-    response.headers['Content-Disposition'] = 'attachment; filename=artists.csv'
-    response.headers['Content-type'] = 'text/csv'
+    response.headers["Content-Disposition"] = "attachment; filename=artists.csv"
+    response.headers["Content-type"] = "text/csv"
 
     return response
 
