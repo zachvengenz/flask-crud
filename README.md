@@ -12,5 +12,5 @@ The remaining implementation and problem-solving were approached in a very 2023 
 
 ### Purpose
 
-This app was created as a school project with an emphasis on familiarizing oneself with a previously unknown or less frequently used technology.
+This app was created as a school (Haaga-Helia University of Applied Sciences - Spring 2023) project with an emphasis on familiarizing oneself with a previously unknown or less frequently used technology.
 The goal was to create something that isn't overly complicated while expanding one's knowledge.
